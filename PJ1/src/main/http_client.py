@@ -11,11 +11,13 @@ UNDEFINED = 2
 REDIRECT = 1
 SUCCEED = 0
 
-#Print to the stderr
+
+# Print to the stderr
 def errprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
 
-#Parse the URL
+
+# Parse the URL
 def parseURL(url_str, context):
     url_str = url_str.lower()
     infos = url_str.split(':')
@@ -35,14 +37,12 @@ def parseURL(url_str, context):
         context['status'] = ERROR
         return -1
     url = url[2:]
-    tmp = url.split('/', 1)
-    url = tmp[0]
-    if len(tmp) > 1 and len(tmp[-1]) > 0:
-        filename = '/' + tmp[-1]
+    url = url.split('/', 1)[0]
+    tmp = url_str.split('//', 1)[1].split('/', 1)
+    if len(tmp) > 1:
+        filename = '/' + tmp[1]
     if len(infos) == 3:
-        port = infos[2]
-        if port[-1] == '/':
-            port = port[:-1]
+        port = infos[2].split('/')[0]
         try:
             port = int(port)
         except ValueError:
@@ -55,17 +55,23 @@ def parseURL(url_str, context):
     context['filename'] = filename
     return 0
 
-#Parse the HTML header
+
+# Parse the HTML header
 def parseHeader(content, context):
     [header, body] = content.split('\r\n\r\n', 1)
-    status_line, header_content = header.split('\r\n', 1)
+    tmp = header.split('\r\n', 1)
+    if len(tmp) != 2:
+        errprint('Invalid response')
+        context['status'] = ERROR
+        return
+    [status_line, header_content]  = tmp
     [version, status, message] = status_line.split(' ', 2)
     status = int(status)
     header_dict = {'version': version, 'status': status, 'message': message}
+    context['header'] = header_dict
     for h in header_content.split('\r\n'):
         hl = h.split(' ', 1)
         header_dict[hl[0][:-1]] = hl[1]
-    context['header'] = header_dict
 
     if status == 200:
         context['status'] = SUCCEED
@@ -78,6 +84,9 @@ def parseHeader(content, context):
         context['status'] = ERROR_BUT_DISPLAY
     else:
         context['status'] = ERROR
+
+
+
 
 
 def getURLs():
@@ -96,10 +105,10 @@ def getContent(host, port, filename):
         s.send(request_header)
         response = ''
         while True:
-            recv = s.recv(1024)
-            if not recv:
+            data = s.recv(1024)
+            if not data:
                 break
-            response += recv
+            response += data
         s.close()
     except:
         errprint('Unexpected error during the downloading: ', sys.exc_info())
@@ -108,33 +117,35 @@ def getContent(host, port, filename):
 
 
 def connect(url, context = None, count = 0):
-    #The program may redirect infinitely, so I set the maximum redirect times is 15
-    if count > 15:
-        errprint('Redirect too much times')
-        return context, 'Error'
+    # The program may redirect infinitely, so I set the maximum redirect times to 15
     if context is None:
         context = {'status': UNDEFINED}
-    parseURL(url, context)
-    status = context['status']
-    host = context.get('host', None)
-    port = context.get('port', -1)
-    filename = context.get('filename', '/')
-    if status != SUCCEED:
-        errprint("Unexpected error in the URL")
-        return context, 'Error'
-    response = getContent(host, port, filename)
-    if response is None:
-        context['status'] = ERROR
-        return context, 'Error'
-    parseHeader(response, context)
-    status = context['status']
-    # Redirect
-    if status == REDIRECT:
+    while True:
+        if count > 15:
+            errprint('Redirect too much times')
+            return context, 'Error'
+        parseURL(url, context)
+        status = context['status']
+        host = context.get('host', None)
+        port = context.get('port', -1)
+        filename = context.get('filename', '/')
+        if status != SUCCEED:
+            errprint("Unexpected error in the URL")
+            return context, 'Error'
+        response = getContent(host, port, filename)
+        if response is None:
+            context['status'] = ERROR
+            return context, 'Error'
+        parseHeader(response, context)
+        status = context['status']
+        # Not redirect
+        if status != REDIRECT:
+            return context, response
+        # Redirect
         errprint('Redirect to: ' + context['header']['Location'])
-        location = context['header']['Location']
+        url = context['header']['Location']
+        count += 1
         del(context['header'])
-        return connect(location, context, count + 1)
-    return context, response
 
 
 def get(urls):
@@ -148,6 +159,7 @@ def get(urls):
             print(context['header']['status'], context['header']['message'])
         if status == SUCCEED or status == ERROR_BUT_DISPLAY:
             print(response)
+
 
 def client():
     urls = getURLs()
