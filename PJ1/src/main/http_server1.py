@@ -72,9 +72,10 @@ def listen(s):
     request = ''
     while True:
         data = conn.recv(1024)
-        if data:
-            request += data
-        if not data or len(data) < 1024:
+        if not data:
+            break
+        request += data
+        if len(data) < 1024:
             break
     return conn, request
 
