@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 from __future__ import print_function
+from common import errprint
 import socket
 import sys
 import time
@@ -11,9 +12,6 @@ DEFAULT_HOST = ''
 DEFAULT_PORT = 8000
 DEFAULT_HEADER = {'Content-Type': 'text/html'}
 
-# Print to the stderr
-def errprint(*args, **kwargs):
-    print(*args, file=sys.stderr, **kwargs)
 
 def header2str(d):
     s = ''
@@ -21,6 +19,7 @@ def header2str(d):
         s += k + ': ' + v + '\r\n'
     s += '\r\n'
     return s
+
 
 # Parse the HTTP header
 def parseHeader(content):
@@ -33,6 +32,7 @@ def parseHeader(content):
         command_line = tmp[0]
         [method, pathname, version] = command_line.split(' ', 2)
         header_dict = {'method': method, 'pathname': pathname, 'version': version}
+        print ('pathname', pathname)
         if len(tmp) < 2:
             return header_dict
         header_content = tmp[1]
@@ -59,11 +59,11 @@ def parseSysParam():
     return port
 
 
-def initServer():
+def initServer(backlog):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     port = parseSysParam()
     s.bind((DEFAULT_HOST, port))
-    s.listen(1)
+    s.listen(backlog)
     return s
 
 
@@ -75,7 +75,7 @@ def listen(s):
         if not data:
             break
         request += data
-        if len(data) < 1024:
+        if len(request) > 4 and request[-4:] == '\r\n\r\n':
             break
     return conn, request
 
@@ -84,15 +84,17 @@ def openFile(pathname):
     if pathname == '/':
         pathname = DEFAULT_PATH
     try:
+        pathname = pathname.lower()
         f = open(ROOT_DIR + pathname, 'r')
     except:
         errprint('Unexpected error during open file')
         return None
     return f
 
+
 def sendError(conn):
     f = open(ROOT_DIR + ERROR_PATH)
-    header = 'HTTP/1.0 404 NOT FOUND'
+    header = 'HTTP/1.0 404 NOT FOUND\r\n'
     header += header2str(DEFAULT_HEADER)
     conn.send(header)
     while True:
@@ -118,26 +120,26 @@ def sendFile(conn, f):
         return None
 
 
+def processHtml(conn, content):
+    header_dict = parseHeader(content)
+    if header_dict is not None:
+        f = openFile(header_dict['pathname'])
+        if f is not None:
+            sendFile(conn, f)
+            print("Success")
+        else:
+            sendError(conn)
+            print("Not found")
 
-def start():
+def main():
     print('start')
-    s = initServer()
+    s = initServer(3)
 
     while True:
         conn, content = listen(s)
-        header_dict = parseHeader(content)
-        if header_dict is not None:
-            f = openFile(header_dict['pathname'])
-            if f is not None:
-                sendFile(conn, f)
-                print("Success")
-            else:
-                sendError(conn)
-                print("Not found")
+        processHtml(conn, content)
         conn.close()
 
 
-
-
 if __name__ == '__main__':
-    start()
+    main()

@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from __future__ import print_function
+from common import errprint
 import socket
 import sys
 
@@ -11,10 +12,6 @@ UNDEFINED = 2
 REDIRECT = 1
 SUCCEED = 0
 
-
-# Print to the stderr
-def errprint(*args, **kwargs):
-    print(*args, file=sys.stderr, **kwargs)
 
 
 # Parse the URL
@@ -86,16 +83,6 @@ def parseHeader(content, context):
         context['status'] = ERROR
 
 
-
-
-
-def getURLs():
-    if len(sys.argv) == 1:
-        errprint('Don\'t have url')
-        return None
-    return [sys.argv[i] for i in range(1, len(sys.argv))]
-
-
 def getContent(host, port, filename):
     print(host, port, filename)
     request_header = 'GET ' + filename + ' HTTP/1.0\r\n\r\n'
@@ -160,8 +147,14 @@ def get(urls):
         if status == SUCCEED or status == ERROR_BUT_DISPLAY:
             print(response)
 
+def getURLs():
+    if len(sys.argv) == 1:
+        errprint('Don\'t have url')
+        return None
+    return [sys.argv[i] for i in range(1, len(sys.argv))]
 
-def client():
+
+def main():
     urls = getURLs()
     if urls is None:
         return ERROR
@@ -171,4 +164,4 @@ def client():
 
 
 if __name__ == '__main__':
-    client()
+    main()
