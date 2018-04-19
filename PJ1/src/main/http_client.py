@@ -85,7 +85,8 @@ def parseHeader(content, context):
 
 def getContent(host, port, filename):
     print(host, port, filename)
-    request_header = 'GET ' + filename + ' HTTP/1.0\r\n\r\n'
+    request_header = 'GET ' + filename + ' HTTP/1.0\r\n'
+    request_header += 'Host: ' + host + ':' + str(port) + '\r\n\r\n'
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
         s.connect((host, port))
@@ -165,3 +166,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
