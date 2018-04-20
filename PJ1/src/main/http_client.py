@@ -66,13 +66,13 @@ def parseHeader(content, context):
     header_dict = {'version': version, 'status': status, 'message': message}
     context['header'] = header_dict
     for h in header_content.split('\r\n'):
-        hl = h.split(' ', 1)
-        header_dict[hl[0][:-1]] = hl[1]
+        hl = h.split(': ', 1)
+        header_dict[hl[0]] = hl[1]
 
     if status == 200:
         context['status'] = SUCCEED
         content_type = header_dict.get('Content-Type', '')
-        if len(content_type) < 9 or content_type[:9] != 'text/html':
+        if len(content_type) < 9 or content_type.find('text/html') < 0:
             context['status'] = ERROR
     elif status == 301 or status == 302:
         context['status'] = REDIRECT
@@ -146,6 +146,7 @@ def get(urls):
             print(context['header']['status'], context['header']['message'])
         if status == SUCCEED or status == ERROR_BUT_DISPLAY:
             print(response)
+
 
 def getURLs():
     if len(sys.argv) == 1:
