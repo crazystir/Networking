@@ -13,7 +13,6 @@ REDIRECT = 1
 SUCCEED = 0
 
 
-
 # Parse the URL
 def parseURL(url_str, context):
     url_str = url_str.lower()
