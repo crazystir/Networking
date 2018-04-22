@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-from __future__ import print_function
 from common import errprint
 import socket
 import sys
@@ -32,7 +31,7 @@ def parseHeader(content):
         command_line = tmp[0]
         [method, pathname, version] = command_line.split(' ', 2)
         header_dict = {'method': method, 'pathname': pathname, 'version': version}
-        print ('pathname', pathname)
+        errprint ('pathname', pathname)
         if len(tmp) < 2:
             return header_dict
         header_content = tmp[1]
@@ -81,8 +80,15 @@ def listen(s):
 
 
 def openFile(pathname):
+    if pathname is None or not isinstance(pathname, str):
+        errprint('Invalid pathname')
+        return None
     if pathname == '/':
         pathname = DEFAULT_PATH
+    tmp = pathname.split('.', 1)
+    if len(tmp) < 2 or (tmp[1] != 'html' and tmp[1] != 'htm'):
+        errprint('Invalid pathname')
+        return None
     try:
         pathname = pathname.lower()
         f = open(ROOT_DIR + pathname, 'r')
@@ -90,6 +96,14 @@ def openFile(pathname):
         errprint('Unexpected error during open file')
         return None
     return f
+
+
+def errorHeader():
+    return 'HTTP/1.0 404 NOT FOUND\r\n' + header2str(DEFAULT_HEADER)
+
+
+def successHeader():
+    return 'HTTP/1.0 200 OK\r\n' + header2str(DEFAULT_HEADER)
 
 
 def sendError(conn):
@@ -126,13 +140,13 @@ def processHtml(conn, content):
         f = openFile(header_dict['pathname'])
         if f is not None:
             sendFile(conn, f)
-            print("Success")
+            errprint("Success")
         else:
             sendError(conn)
-            print("Not found")
+            errprint("Not found")
 
 def main():
-    print('start')
+    errprint('%s start running' % __file__)
     s = initServer(3)
 
     while True:
