@@ -14,6 +14,7 @@ READING_SCOKET = 0
 READING_FILE = 1
 WRITING_SOCKET = 2
 BLOCK = 3
+FINISHED = 4
 
 SOCKET = 0
 FILE = 1
@@ -130,6 +131,8 @@ def writeSocket(messages, s):
             con = content.queue[0]
             s.send(con)
             content.get()
+        if content.empty():
+            messages[s]['status'] = FINISHED
     except socket.error:
         errprint('Block during writing socket')
         messages[s]['status'] = BLOCK
@@ -147,14 +150,12 @@ def listen(server):
             elif messages[s]['type'] == SOCKET:
                 errprint('Reading socket')
                 readSocket(messages, inputs, s)
-
                 if messages.get(s, None) is not None and messages[s]['status'] == ERROR:
                     closeStream(inputs, outputs, messages, s)
                     continue
             elif messages[s]['type'] == FILE:
                 errprint('Reading file')
                 readFile(messages, inputs, outputs, s)
-
                 if messages.get(s, None) is not None and messages[s]['status'] == ERROR:
                     closeStream(inputs, outputs, messages, s)
                     continue
@@ -166,12 +167,12 @@ def listen(server):
                 errprint('Wrong type of output stream')
                 closeStream(inputs, outputs, messages, s)
             errprint('Respond to the client')
-
             writeSocket(messages, s)
             if messages[s]['status'] == ERROR:
                 errprint('Unknown error during writing socket')
-            errprint('Finish writing, end')
-            closeStream(inputs, outputs, messages, s)
+            if messages[s]['status'] == FINISHED:
+                errprint('Finish writing, end')
+                closeStream(inputs, outputs, messages, s)
         for s in exceptional:
             errprint('Exceptional stream')
             closeStream(inputs, outputs, messages, s)
