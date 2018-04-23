@@ -2,6 +2,7 @@
 
 from common import errprint
 import http_server1
+import socket
 import select
 
 
@@ -61,21 +62,19 @@ def listen(server):
             if s is server:
                 readServer(inputs, messages, s)
             else:
-                while True:
-                    data = s.recv(1024)
-                    print (data, len(data))
-                    if data:
-                        readData(messages, data, s)
-                    if not data or (len(messages[s]) >= 4 and messages[s][-4:] == '\r\n\r\n'):
-                        closeRead(inputs, outputs, s)
-                        break
-                execute(messages, s)
-                closeWrite(outputs, messages, s)
-        # for s in writable:
-        #     if s not in outputs:
-        #         continue
-        #     execute(messages, s)
-        #     closeWrite(outputs, messages, s)
+                try:
+                    while True:
+                        data = s.recv(1024)
+                        print (data, len(data))
+                        if data:
+                            readData(messages, data, s)
+                        if not data or (len(messages[s]) >= 4 and messages[s][-4:] == '\r\n\r\n'):
+                            closeRead(inputs, outputs, s)
+                            break
+                    execute(messages, s)
+                    closeWrite(outputs, messages, s)
+                except socket.error:
+                    errprint('Socket blocked')
         for s in exceptional:
             closeServer(inputs, outputs, messages, s)
 
