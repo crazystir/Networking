@@ -62,7 +62,7 @@ def listen(server):
                 readServer(inputs, messages, s)
             else:
                 data = s.recv(1024)
-                print (data, len(data))
+                errprint (data, len(data))
                 if data:
                     readData(messages, data, s)
                 if not data or (len(messages[s]) >= 4 and messages[s][-4:] == '\r\n\r\n'):
