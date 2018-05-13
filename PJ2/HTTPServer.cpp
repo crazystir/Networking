@@ -20,7 +20,7 @@ HTTPServer::HTTPServer(tran_type type, char * addr, u_int port, int backlog, cha
         , char* upstream_addr, u_int upstream_port) : server(type, addr, port, backlog, out_addr) {}
 
 
-int HTTPServer::check_error(const string &) {}
+int HTTPServer::check_error(const string &) {return 0;}
 
 void HTTPServer::error_handle(string &) {}
 
