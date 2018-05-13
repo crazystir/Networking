@@ -4,7 +4,7 @@ import socket
 import sys
 import time
 
-ROOT_DIR = '../../html'
+ROOT_DIR = '.'
 DEFAULT_PATH = '/rfc2616.html'
 ERROR_PATH = '/error.html'
 DEFAULT_HOST = ''
@@ -108,8 +108,7 @@ def successHeader():
 
 def sendError(conn):
     f = open(ROOT_DIR + ERROR_PATH)
-    header = 'HTTP/1.0 404 NOT FOUND\r\n'
-    header += header2str(DEFAULT_HEADER)
+    header = errorHeader()
     conn.send(header)
     while True:
         data = f.read(1024)
@@ -121,8 +120,7 @@ def sendError(conn):
 
 def sendFile(conn, f):
     try:
-        header = 'HTTP/1.0 200 OK\r\n'
-        header += header2str(DEFAULT_HEADER)
+        header = successHeader()
         conn.send(header)
         while True:
             data = f.read(1024)
@@ -147,8 +145,7 @@ def processHtml(conn, content):
 
 def main():
     errprint('%s start running' % __file__)
-    s = initServer(3)
-
+    s = initServer(1)
     while True:
         conn, content = listen(s)
         processHtml(conn, content)

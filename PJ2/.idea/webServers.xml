@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="afc2d2d7-8802-4edc-b81b-d8a17e212f2e" name="PJ2" url="http://ec2-user@ec2-18-236-90-119.us-west-2.compute.amazonaws.com">
+        <fileTransfer host="ec2-user@ec2-18-236-90-119.us-west-2.compute.amazonaws.com" port="22" privateKey="$USER_HOME$/.ssh/Zthgogogo.pem" rootFolder="/home/ec2-user" accessType="SFTP" keyPair="true">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" />
+          </advancedOptions>
+          <option name="port" value="22" />
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>

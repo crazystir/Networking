@@ -6,7 +6,6 @@ import http_server1
 import select
 import fcntl
 import os
-import errno
 import Queue
 
 ERROR = -1
@@ -80,7 +79,6 @@ def readSocket(messages, inputs, s):
             data = s.recv(1024)
             if data:
                 readSocketData(messages, data, s)
-            print (data, data[-4:])
             if not data or (len(messages[s]['content']) >= 4 and messages[s]['content'][-4:] == '\r\n\r\n'):
                 inputs.remove(s)
                 openFile(inputs, messages, s)
@@ -110,11 +108,12 @@ def readFile(messages, inputs, outputs, f):
     try:
         while True:
             data = f.read(1024)
-            if data == '':
+            if data == '' or data == '\n' or data == '\r\n' \
+                    or (len(data) >= 2 and data[-2:] == '\n\n') or (len(data) >= 4 and data[-4:] == '\r\n\r\n'):
                 finishReadingFile(messages, inputs, outputs, f)
                 break
             readFileData(messages, data, f)
-    except errno.EAGAIN:
+    except IOError:
         errprint('The file %s is blocked' % f.name)
         messages[f]['status'] = BLOCK
 
