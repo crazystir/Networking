@@ -3,6 +3,7 @@
 //
 
 #include "DNSClient.h"
+#include <iostream>
 
 DNSClient::DNSClient():client() {}
 

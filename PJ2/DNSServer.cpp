@@ -7,7 +7,11 @@
 
 using namespace std;
 
+static int client_port = DEFAULT_CLIENT_PORT;
+
+
 void printHex(const string &result) {
+    int count = 0;
     cout << result.size() << endl;
     for (char c : result) {
         printf("%x ", c & 0xff);

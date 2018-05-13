@@ -6,6 +6,7 @@
 
 using namespace std;
 
+
 client::client() {
     type = DEFAULT_CLIENT_TYPE;
     strncpy((char*)addr, DEFAULT_ADDR, 40);
@@ -28,18 +29,12 @@ void client::init() {
         perror("Error during creating client socket");
         exit(1);
     }
-    if (port == 10000) {
-	port = DEFAULT_CLIENT_PORT;
-    }
     setsockopt(client_fd, SOL_SOCKET, SO_REUSEADDR, (char*)&flag, sizeof(flag));
     client_addr.sin_addr.s_addr = inet_addr((char*)addr);
     client_addr.sin_family = AF_INET;
     client_addr.sin_port = htons((uint16_t)port);
-    ++port;
-    printf("port: %d\n", port);
     if (bind(client_fd, (sockaddr*)&client_addr, sizeof(client_addr)) < 0) {
         perror("Error during binding client socket");
-        close(client_fd);
         exit(1);
     }
 }
@@ -52,7 +47,6 @@ void client::conn(char* remote_ip, u_int remote_port) {
     bzero(&remote_addr.sin_zero, 8);
     if (connect(client_fd, (struct sockaddr*)&remote_addr, sizeof(remote_addr)) == -1) {
         perror("Connection error");
-        close(client_fd);
         exit(1);
     }
     printf("Connect to server (%s:%u) successfully\n", inet_ntoa(remote_addr.sin_addr), ntohs(remote_addr.sin_port));

@@ -9,16 +9,14 @@
 server::server() {
     port = DEFAULT_SERVER_PORT;
     strncpy((char*)addr, DEFAULT_ADDR, 40);
-    strncpy((char*)out_addr, OUT_ADDR, 40);
     type = DEFAULT_SERVER_TYPE;
     backlog = DEFAULT_SERVER_BACKLOG;
     init();
 }
 
-server::server(tran_type type, char* addr , u_int port, int backlog, char* out_addr) {
+server::server(tran_type type, char* addr , u_int port, int backlog) {
     this->type = type;
     strncpy(this->addr, addr, 40);
-    strncpy(this->out_addr, out_addr, 40);
     this->port = port;
     this->backlog = backlog;
     init();

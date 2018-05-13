@@ -16,17 +16,13 @@ using namespace std;
 class DNSServer : public server{
 public:
     DNSServer();
-    DNSServer(tran_type, char*, u_int, int, u_int, char*, char*, u_int);
-    inline int check_error(const string&);
-    void run_udp(int) override ;
-    void run_tcp(int, struct sockaddr*) override ;
-    void error_handle(string&) override;
+    DNSServer(tran_type, char*, u_int, int, u_int, char*, u_int);
+    void run(int) override ;
 
 private:
     DNSClient dnsClient;
     char upstream_addr[40];
     u_int upstream_port;
-
 };
 
 

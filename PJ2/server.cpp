@@ -70,10 +70,13 @@ void server::execute() {
             continue;
         }
         printf("Receive a connectiong from %s:%u\n", inet_ntoa(remote_addr.sin_addr), ntohs(remote_addr.sin_port));
-        printf("Run\n");
-        run_tcp(client_fd, (struct sockaddr*)&remote_addr);
-        printf("Run finishes\n");
-        close(client_fd);
+        if (!fork()) {
+            printf("Run\n");
+            run_tcp(client_fd, (struct sockaddr*)&remote_addr);
+            printf("Run finishes\n");
+            close(client_fd);
+            exit(0);
+        }
     }
 }
 

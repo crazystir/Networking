@@ -21,19 +21,16 @@ using namespace std;
 class server {
 public:
     server();
-    server(tran_type, char*, u_int, int, char*);
+    server(tran_type, char*, u_int, int);
     void start();
     void init();
     void execute();
     void finish();
-    virtual void run_udp(int) = 0;
-    virtual void run_tcp(int, struct sockaddr*) = 0;
-    virtual void error_handle(string&) = 0;
+    virtual void run(int) = 0;
 
 protected:
     tran_type type;
     char addr[40];
-    char out_addr[40];
     u_int port;
     int socket_fd;
     int backlog;
