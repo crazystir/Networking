@@ -1,3 +1,0 @@
-/home/gqt/Project/Courses/340/PJ2/cmake-build-debug/CMakeFiles/rebuild_cache.dir
-/home/gqt/Project/Courses/340/PJ2/cmake-build-debug/CMakeFiles/edit_cache.dir
-/home/gqt/Project/Courses/340/PJ2/cmake-build-debug/CMakeFiles/PJ2.dir
