@@ -236,8 +236,8 @@ void Topology::CollectShortestPathTreeLinks(const Node &src, deque<Link> &links)
     deque<Link*> *adj= GetOutgoingLinks(FindMatchingNode(&x));
     for (deque<Link*>::const_iterator i=adj->begin();i!=adj->end();++i) {
       unsigned dest=(**i).GetDest();
-      double dist=(**i).GetLatency();
-      if (dist<distance[dest]) { 
+      double dist=(**i).GetLatency() + curmin;
+      if (dist<distance[dest]) {
 	distance[dest]=dist;
 	pred[dest]=closest;
       }

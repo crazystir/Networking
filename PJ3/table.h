@@ -22,6 +22,8 @@ class Table {
 #include <vector>
 #include <queue>
 #include "linknode.h"
+
+#define INF 99e99
 typedef vector<vector<double> > VVD;
 typedef vector<vector<int> > VVI;
 typedef vector<double> VD;
@@ -86,7 +88,7 @@ class Table {
   bool NodeChange(unsigned, unsigned, const VD&);
   unsigned GetLength() const;
   VD GetDistance(unsigned);
-  VD FilteredDistance(unsigned);
+  VD FilteredDistance(unsigned) const;
   unsigned GetNext(unsigned) const;
   ostream & Print(ostream &os) const;
 };

@@ -1,6 +1,9 @@
 #include "node.h"
 #include "context.h"
 #include "error.h"
+#include <deque>
+
+using namespace std;
 
 
 Node::Node(const unsigned n, SimulationContext *c, double b, double l) :
@@ -60,12 +63,30 @@ Node::~Node()
 // so that the corresponding node can recieve the ROUTING_MESSAGE_ARRIVAL event at the proper time
 void Node::SendToNeighbors(const RoutingMessage *m)
 {
-  context -> SendToNeighbors(this, m);
+//  deque<Link*> *ll=context -> GetOutgoingLinks(this);
+//  for (deque<Link*>::const_iterator i=ll->begin();i!=ll->end();++i) {
+//    Node x = Node((*i)->GetDest(),0,0,0);
+//    context -> PostEvent(new Event(context -> GetTime()+(*i)->GetLatency(),
+//                        ROUTING_MESSAGE_ARRIVAL,
+//                        context -> FindMatchingNode(&x),
+//                        (void*)m));
+//  }
+//  delete ll;
+    context -> SendToNeighbors(this, m);
 }
 
 void Node::SendToNeighbor(const Node *n, const RoutingMessage *m)
 {
-  context -> SendToNeighbor(this, n, m);
+//  Link x = Link(number,n->GetNumber(),0,0,0);
+//  Link *l = context -> FindMatchingLink(&x);
+//
+//  if (l != 0) {
+//    context -> PostEvent(new Event(context -> GetTime() + l->GetLatency(),
+//                        ROUTING_MESSAGE_ARRIVAL,
+//                        context -> FindMatchingNode(n),
+//                        (void *) m));
+//  }
+    context -> SendToNeighbor(this, n, m);
 }
 
 deque<Node*> *Node::GetNeighbors()
@@ -118,7 +139,8 @@ Table *Node::GetRoutingTable() const
 
 ostream & Node::Print(ostream &os) const
 {
-  os << "Node(number="<<number<<", lat="<<lat<<", bw="<<bw<<")";
+  os << "Node(number="<<number<<", lat="<<lat<<", bw="<<bw<<")" << endl;
+  os << *GetRoutingTable() << endl;
   return os;
 }
 
@@ -138,11 +160,8 @@ void Node::LinkHasBeenUpdated(const Link *l)
 {
   cerr << *this<<": Link Update: "<<*l<<endl;
   routingTable.AddLink(l -> GetSrc(), l -> GetDest(), l -> GetLatency());
-//  RoutingMessage *tmp = new RoutingMessage();
-//  tmp -> SetLinkInfo(Link(*l));
-//  tmp -> mark(this -> number);
   sent = true;
-  SetTimeOut(5);
+  SetTimeOut(10);
 }
 
 
@@ -204,7 +223,8 @@ Table *Node::GetRoutingTable() const
 
 ostream & Node::Print(ostream &os) const
 {
-  os << "Node(number="<<number<<", lat="<<lat<<", bw="<<bw<<")";
+  os << "Node(number="<<number<<", lat="<<lat<<", bw="<<bw<<")" << endl;
+  os << routingTable << endl;
   return os;
 }
 #endif
@@ -230,7 +250,6 @@ void Node::LinkHasBeenUpdated(const Link *l)
     for (deque<Node*>::iterator it = neighbors.begin();
           it != neighbors.end(); it++)
     {
-       cout << routingTable << endl;
        SendToNeighbor(*it, new RoutingMessage(response
           , number, routingTable.GetLength(), routingTable.FilteredDistance((**it).GetNumber())));
     }
@@ -287,7 +306,8 @@ Table *Node::GetRoutingTable() const
 
 ostream & Node::Print(ostream &os) const
 {
-  os << "Node(number="<<number<<", lat="<<lat<<", bw="<<bw;
+  os << "Node(number="<<number<<", lat="<<lat<<", bw="<<bw << endl;
+  os << routingTable << endl;
   return os;
 }
 #endif

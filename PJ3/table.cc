@@ -56,7 +56,7 @@ void Table::Dijkstra() {
 
   distance.clear();
   next.clear();
-  distance = VD(nodeLength, -1);
+  distance = VD(nodeLength, INF);
   next = VI(nodeLength, -1);
   src = nodeNum;
   distance[src] = 0;
@@ -74,7 +74,7 @@ void Table::Dijkstra() {
     for (i = 0; i < graph[num].size(); i++) {
       node = graph[num][i].num;
       lat = graph[num][i].lat;
-      if (distance[node] < 0 || distance[num] + lat < distance[node]) {
+      if (distance[num] + lat < distance[node]) {
         distance[node] = distance[num] + lat;
         pre[node] = num;
         q.push(LinkNode(node, distance[node]));
@@ -106,7 +106,6 @@ void Table::AddLinks(unsigned src, const VL& dests) {
 
 void Table::AddLink(unsigned src, unsigned dest, double lat) {
   unsigned size = max(src, dest) + 1;
-  unsigned i;
   VL::iterator it;
 
   if (graph.size() < size) {
@@ -131,9 +130,9 @@ ostream & Table::Print(ostream &os) const {
   unsigned i;
 
   os << "ID: " << nodeNum << endl;
-  os << "Destination" << " " << "Next" << endl;
+  os << "Destination" << " " << "Distance" << " " << "Next" << endl;
   for (i = 0; i < next.size(); i++) {
-    os << i << " " << next[i] << endl;
+    os << i << " " << distance[i] << " " << next[i] << endl;
   }
   os << endl;
   return os;
@@ -173,11 +172,11 @@ bool Table::update() {
   map<unsigned, VD>::iterator it;
   VD neighborDistance;
   VD oldDistance = distance;
+  VI oldNext = next;
 
-  for (i = 0; i < nodeLength; i++) {
-    distance[i] = INF;
-    next[i] = -1;
-  }
+  fill(distance.begin(), distance.end(), INF);
+  fill(next.begin(), next.end(), -1);
+
   distance[nodeNum] = 0;
   next[nodeNum] = nodeNum;
   for (it = neighborsDistance.begin(); it != neighborsDistance.end(); it++) {
@@ -191,24 +190,15 @@ bool Table::update() {
     }
   }
 
-  for (i = 0; i < nodeLength; i++) {
-    if (oldDistance[i] != distance[i])
-      return true;
-  }
-  return false;
-
+  return oldDistance != distance || oldNext != next;
 }
 
 bool Table::NodeChange(unsigned neighbor, unsigned nLength, const VD& nDistance) {
-  unsigned i;
-  bool updated = false;
-
   CheckLength(nLength);
   neighborsDistance[neighbor] = nDistance;
   if (nLength < nodeLength) {
     neighborsDistance[neighbor].resize(nodeLength, INF);
   }
-
   return update();
 }
 
@@ -229,7 +219,7 @@ bool Table::AddLink(unsigned dest, double lat) {
   return update();
 }
 
-VD Table::FilteredDistance(unsigned destNum) {
+VD Table::FilteredDistance(unsigned destNum) const {
   VD resDistance = distance;
   unsigned i;
 
@@ -240,6 +230,7 @@ VD Table::FilteredDistance(unsigned destNum) {
   }
   return resDistance;
 }
+
 VD Table::GetDistance(unsigned nLength) {
   CheckLength(nLength);
   return distance;
