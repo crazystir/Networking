@@ -162,6 +162,7 @@ void Table::resize(unsigned size) {
   distance.resize(size, INF);
   neighborsCost.resize(size, INF);
   nodeLength = size;
+
   for (it = neighborsDistance.begin(); it != neighborsDistance.end(); it++) {
     (it -> second).resize(size, INF);
   }
@@ -179,6 +180,7 @@ bool Table::update() {
 
   distance[nodeNum] = 0;
   next[nodeNum] = nodeNum;
+
   for (it = neighborsDistance.begin(); it != neighborsDistance.end(); it++) {
     neighbor = it -> first;
     neighborDistance = it -> second;
