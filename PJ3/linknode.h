@@ -10,7 +10,7 @@ struct LinkNode {
   LinkNode(): num(0), lat(0) {}
   LinkNode(unsigned n, double l): num(n), lat(l) {}
   LinkNode(const LinkNode& b): num(b.num), lat(b.lat) {}
-  bool operator()(const LinkNode& a, const LinkNode& b) {return a.lat < b.lat;}
+  bool operator()(const LinkNode& a, const LinkNode& b) {return a.lat > b.lat;}
   bool operator== (const LinkNode& b) {return num == b.num;}
   LinkNode& operator=(const LinkNode& b) {return *(new(this)LinkNode(b));}
 };

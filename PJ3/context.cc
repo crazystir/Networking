@@ -294,6 +294,10 @@ void SimulationContext::CollectPathLinks(const Node &src, const Node &dest, dequ
   unsigned count=0;
   while (n->GetNumber()!=dest.GetNumber()) {
     Node *next_node=n->GetNextHop(&dest);
+    if (dest.GetNumber() == 2) {
+      cout << "HAHAHAHAHHA " << next_node -> GetNumber() << endl;
+    }
+
     if (next_node==0) {
       cout << "Error 1" << endl;
       break;
@@ -304,6 +308,9 @@ void SimulationContext::CollectPathLinks(const Node &src, const Node &dest, dequ
       delete next_node;
       break;
     }
+    if (n -> GetNumber() == 25 && last == 33) {
+      cout << "HAHAAHA " << dest.GetNumber() << endl;
+    }
     //    cerr << last <<" -> " << n->GetNumber()<<endl;
     path.push_back(Link(last,n->GetNumber(),0,0,0));
     last=n->GetNumber();
@@ -313,6 +320,12 @@ void SimulationContext::CollectPathLinks(const Node &src, const Node &dest, dequ
       cerr << "SimulationContext::CollectPathLinks terminating prematurely due to suspected routing loop!\n";
       break;
     }
+  }
+  if (dest.GetNumber() == 2) {
+    for (deque<Link>::iterator it = path.begin(); it != path.end(); it++) {
+      cout << it -> GetDest()<< endl;
+    }
+
   }
 
 }

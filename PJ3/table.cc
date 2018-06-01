@@ -23,7 +23,7 @@ Table::Table() {
 
 Table::Table(unsigned num): nodeNum(num), nodeLength(0), updated(false){}
 
-Table::Table(const Table& table): nodeNum(table.nodeNum), nodeLength(table.nodeLength), graph(table.graph), distance(table.distance), next(table.next), updated(false) {}
+Table::Table(const Table& table): nodeNum(table.nodeNum), nodeLength(table.nodeLength), updated(false), graph(table.graph), distance(table.distance), next(table.next) {}
 
 bool Table::operator()(unsigned num1, unsigned num2) {
   return distance[num1] > distance[num2];
@@ -84,7 +84,7 @@ void Table::Dijkstra() {
 
   for (i = 0; i < length; i++) {
     num = i;
-    while (pre[num] != -1 && pre[num] != src) {
+    while (pre[num] != -1 && (unsigned)pre[num] != src) {
       num = pre[num];
     }
     next[i] = pre[num] == -1 ? -1 : num;
@@ -169,7 +169,7 @@ void Table::resize(unsigned size) {
 }
 
 bool Table::update() {
-  unsigned i, j, neighbor;
+  unsigned i, neighbor;
   map<unsigned, VD>::iterator it;
   VD neighborDistance;
   VD oldDistance = distance;
@@ -205,7 +205,6 @@ bool Table::NodeChange(unsigned neighbor, unsigned nLength, const VD& nDistance)
 }
 
 bool Table::AddLink(unsigned dest, double lat) {
-  unsigned i;
   VD tmp;
 
   CheckLength(dest + 1);
@@ -226,7 +225,7 @@ VD Table::FilteredDistance(unsigned destNum) const {
   unsigned i;
 
   for (i = 0; i < nodeLength; i++) {
-    if (next[i] == destNum) {
+    if ((unsigned)next[i] == destNum) {
       resDistance[i] = INF;
     }
   }

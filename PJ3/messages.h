@@ -20,7 +20,7 @@ class RoutingMessage {
 #include "linknode.h"
 class RoutingMessage {
 private:
-  static int IDCounter;
+//  static int IDCounter;
   int messageID;
   unsigned srcNum;
   VL dests;
@@ -28,6 +28,7 @@ private:
 
 public:
   RoutingMessage();
+  RoutingMessage(int, unsigned, VL);
   RoutingMessage(const RoutingMessage &rhs);
   RoutingMessage &operator=(const RoutingMessage &rhs);
   void SetDestsInfo(const VL&);
@@ -47,7 +48,7 @@ typedef vector<double> VD;
 enum RoutingMessageType {request, response};
 class RoutingMessage {
 private:
-  static int IDCounter;
+//  static int IDCounter;
   int messageID;
   RoutingMessageType type;
   unsigned srcNum;
@@ -56,8 +57,8 @@ private:
 
 public:
   RoutingMessage();
-  RoutingMessage(RoutingMessageType, unsigned, unsigned);
-  RoutingMessage(RoutingMessageType, unsigned, unsigned, const VD&);
+  RoutingMessage(RoutingMessageType,int, unsigned, unsigned);
+  RoutingMessage(RoutingMessageType,int, unsigned, unsigned, const VD&);
   RoutingMessage(const RoutingMessage &rhs);
   RoutingMessage &operator=(const RoutingMessage &rhs);
 

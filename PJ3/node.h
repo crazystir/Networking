@@ -24,17 +24,23 @@ class Node {
   double   lat;
 
 #if defined(LINKSTATE)
+  typedef pair<unsigned, int> ID;
+
   Table routingTable;
   bool sent;
-  set<unsigned> messagesID;
+  int IDCounter;
+  set<ID> messagesID;
 
   bool hasReceived(const RoutingMessage*);
   void receive(const RoutingMessage*);
 #endif
 
 #if defined(DISTANCEVECTOR)
+  typedef pair<int, unsigned> ID;
+
   Table routingTable;
-  set<unsigned> messagesID;
+  int IDCounter;
+  set<ID> messagesID;
 
   bool hasReceived(const RoutingMessage*);
   void receive(const RoutingMessage*);

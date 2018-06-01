@@ -9,11 +9,11 @@ using namespace std;
 Node::Node(const unsigned n, SimulationContext *c, double b, double l) :
     number(n), context(c), bw(b), lat(l)
 #if defined(LINKSTATE)
-    , routingTable(n), sent(false), messagesID()
+    , routingTable(n), sent(false), IDCounter(0), messagesID()
 #endif
 
 #if defined(DISTANCEVECTOR)
-    , routingTable(n), messagesID()
+    , routingTable(n), IDCounter(0), messagesID()
 #endif
 {
 }
@@ -24,11 +24,11 @@ Node::Node()
 Node::Node(const Node &rhs) : 
   number(rhs.number), context(rhs.context), bw(rhs.bw), lat(rhs.lat)
 #if defined(LINKSTATE)
-    , routingTable(rhs.routingTable), sent(false), messagesID(rhs.messagesID)
+    , routingTable(rhs.routingTable), sent(false), IDCounter(rhs.IDCounter), messagesID(rhs.messagesID)
 #endif
 
 #if defined(DISTANCEVECTOR)
-    , routingTable(rhs.routingTable), messagesID()
+    , routingTable(rhs.routingTable), IDCounter(0), messagesID()
 #endif
 {
 }
@@ -63,29 +63,11 @@ Node::~Node()
 // so that the corresponding node can recieve the ROUTING_MESSAGE_ARRIVAL event at the proper time
 void Node::SendToNeighbors(const RoutingMessage *m)
 {
-//  deque<Link*> *ll=context -> GetOutgoingLinks(this);
-//  for (deque<Link*>::const_iterator i=ll->begin();i!=ll->end();++i) {
-//    Node x = Node((*i)->GetDest(),0,0,0);
-//    context -> PostEvent(new Event(context -> GetTime()+(*i)->GetLatency(),
-//                        ROUTING_MESSAGE_ARRIVAL,
-//                        context -> FindMatchingNode(&x),
-//                        (void*)m));
-//  }
-//  delete ll;
     context -> SendToNeighbors(this, m);
 }
 
 void Node::SendToNeighbor(const Node *n, const RoutingMessage *m)
 {
-//  Link x = Link(number,n->GetNumber(),0,0,0);
-//  Link *l = context -> FindMatchingLink(&x);
-//
-//  if (l != 0) {
-//    context -> PostEvent(new Event(context -> GetTime() + l->GetLatency(),
-//                        ROUTING_MESSAGE_ARRIVAL,
-//                        context -> FindMatchingNode(n),
-//                        (void *) m));
-//  }
     context -> SendToNeighbor(this, n, m);
 }
 
@@ -149,16 +131,17 @@ ostream & Node::Print(ostream &os) const
 #if defined(LINKSTATE)
 
 bool Node::hasReceived(const RoutingMessage* m) {
-  return messagesID.find(m -> GetMessageID()) != messagesID.end();
+  return messagesID.find(make_pair(m -> GetMessageID(), m -> GetSrcNum())) != messagesID.end();
 }
 
 void Node::receive(const RoutingMessage* m) {
-  messagesID.insert(m -> GetMessageID());
+  messagesID.insert(make_pair(m -> GetMessageID(), m -> GetSrcNum()));
 }
 
 void Node::LinkHasBeenUpdated(const Link *l)
 {
   cerr << *this<<": Link Update: "<<*l<<endl;
+  cerr << "Will update the forwarding table after 10s\n" << endl;
   routingTable.AddLink(l -> GetSrc(), l -> GetDest(), l -> GetLatency());
   sent = true;
   SetTimeOut(10);
@@ -200,9 +183,7 @@ void Node::TimeOut()
   cerr << *this << " got a timeout: send data and execute Dijkstra"<<endl;
 
   if (sent) {
-    RoutingMessage* message = new RoutingMessage();
-    message -> SetSrcNum(number);
-    message -> SetDestsInfo(routingTable.GetGraph()[number]);
+    RoutingMessage* message = new RoutingMessage(IDCounter++, number, routingTable.GetGraph()[number]);
     message -> mark(number);
     sent = false;
     SendToNeighbors(message);
@@ -233,11 +214,11 @@ ostream & Node::Print(ostream &os) const
 #if defined(DISTANCEVECTOR)
 
 bool Node::hasReceived(const RoutingMessage* m) {
-  return messagesID.find(m -> GetMessageID()) != messagesID.end();
+  return messagesID.find(make_pair(m -> GetMessageID(), m -> GetSrcNum())) != messagesID.end();
 }
 
 void Node::receive(const RoutingMessage* m) {
-  messagesID.insert(m -> GetMessageID());
+  messagesID.insert(make_pair(m -> GetMessageID(), m -> GetSrcNum()));
 }
 
 void Node::LinkHasBeenUpdated(const Link *l)
@@ -251,7 +232,7 @@ void Node::LinkHasBeenUpdated(const Link *l)
           it != neighbors.end(); it++)
     {
        SendToNeighbor(*it, new RoutingMessage(response
-          , number, routingTable.GetLength(), routingTable.FilteredDistance((**it).GetNumber())));
+          , IDCounter++, number, routingTable.GetLength(), routingTable.FilteredDistance((**it).GetNumber())));
     }
   }
 }
@@ -260,18 +241,21 @@ void Node::LinkHasBeenUpdated(const Link *l)
 void Node::ProcessIncomingRoutingMessage(const RoutingMessage *m)
 {
   cerr << *this << " Routing Message: "<<*m << endl;
+
   if (hasReceived(m)) {
     cerr << *this << "Already receive such message!" << endl;
     return;
   }
+
   receive(m);
   RoutingMessageType type = m -> GetType();
   unsigned srcNum = m -> GetSrcNum();
   unsigned length = m -> GetLength();
+
   if (type == request) {
     VD distance = routingTable.GetDistance(length);
     routingTable.CheckLength(length);
-    RoutingMessage* message = new RoutingMessage(response, number, routingTable.GetLength(), routingTable.FilteredDistance(srcNum));
+    RoutingMessage* message = new RoutingMessage(response, IDCounter++, number, routingTable.GetLength(), routingTable.FilteredDistance(srcNum));
     SendToNeighbor(new Node(srcNum,0,0,0), message);
   } else {
     if (routingTable.NodeChange(srcNum, length, m -> GetDistance())) {
@@ -280,7 +264,7 @@ void Node::ProcessIncomingRoutingMessage(const RoutingMessage *m)
             it != neighbors.end(); it++)
       {
          SendToNeighbor(*it, new RoutingMessage(response
-            , number, routingTable.GetLength(), routingTable.FilteredDistance((**it).GetNumber())));
+            , IDCounter++, number, routingTable.GetLength(), routingTable.FilteredDistance((**it).GetNumber())));
       }
     }
   }

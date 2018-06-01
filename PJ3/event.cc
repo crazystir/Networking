@@ -180,7 +180,7 @@ Event::~Event()
 
 bool Event::IsLater(const Event *rhs) const
 {
-  return timestamp>rhs->timestamp;
+  return timestamp>=rhs->timestamp;
 }
 
 

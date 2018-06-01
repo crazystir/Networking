@@ -1,4 +1,5 @@
 #include "messages.h"
+#include "error.h"
 
 
 #if defined(GENERIC)
@@ -12,7 +13,7 @@ ostream &RoutingMessage::Print(ostream &os) const
 
 #if defined(LINKSTATE)
 
-int RoutingMessage::IDCounter = 0;
+//int RoutingMessage::IDCounter = 0;
 
 ostream &RoutingMessage::Print(ostream &os) const {
   unsigned i;
@@ -29,7 +30,11 @@ ostream &RoutingMessage::Print(ostream &os) const {
   return os;
 }
 
-RoutingMessage::RoutingMessage(): messageID(RoutingMessage::IDCounter++), markedNodes(set<unsigned>()) {}
+RoutingMessage::RoutingMessage() {
+  throw LinkStateException();
+}
+
+RoutingMessage::RoutingMessage(int id, unsigned src, VL dest): messageID(id), srcNum(src), dests(dest), markedNodes(set<unsigned>()) {}
 
 RoutingMessage::RoutingMessage(const RoutingMessage &rhs): messageID(rhs.messageID), srcNum(rhs.srcNum), dests(rhs.dests), markedNodes(rhs.markedNodes) {}
 
@@ -60,14 +65,11 @@ bool RoutingMessage::isMarked(unsigned nodeNum) const {
 void RoutingMessage::mark(unsigned nodeNum) {
   markedNodes.insert(nodeNum);
 }
-
-
-
 #endif
 
 
 #if defined(DISTANCEVECTOR)
-int RoutingMessage::IDCounter = 0;
+//int RoutingMessage::IDCounter = 0;
 
 ostream &RoutingMessage::Print(ostream &os) const
 {
@@ -86,12 +88,14 @@ ostream &RoutingMessage::Print(ostream &os) const
   return os;
 }
 
-RoutingMessage::RoutingMessage() {}
+RoutingMessage::RoutingMessage() {
+  throw DistanceVectorException();
+}
 
-RoutingMessage::RoutingMessage(RoutingMessageType t, unsigned s, unsigned l): messageID(IDCounter++)
+RoutingMessage::RoutingMessage(RoutingMessageType t, int id, unsigned s, unsigned l): messageID(id)
                               , type(t), srcNum(s), length(l), distance(VD()) {}
 
-RoutingMessage::RoutingMessage(RoutingMessageType t, unsigned s, unsigned l, const VD& d): messageID(IDCounter++)
+RoutingMessage::RoutingMessage(RoutingMessageType t, int id, unsigned s, unsigned l, const VD& d): messageID(id)
                               , type(t), srcNum(s), length(l), distance(d) {}
 
 RoutingMessage::RoutingMessage(const RoutingMessage &rhs): messageID(rhs.messageID), type(rhs.type), srcNum(rhs.srcNum)
