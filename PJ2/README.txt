@@ -1,2 +1,2 @@
-qgd7773 18.236.90.119
-tzy1049 52.15.196.85
+# DNS Server
+Implement a DNS server that forward the message to 8.8.8.8 and return the response to the client. For unknown domain name, return a specific IP address.
